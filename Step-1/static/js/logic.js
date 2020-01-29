@@ -10,16 +10,12 @@ var graymap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tile
 var map = L.map("map", {
   center: [35.0078, -97.0929],
   zoom: 3
-  
-});
+  });
 
 // Add our 'graymap' tile layer to the map
 graymap.addTo(map)
 
-
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
-
-
 
 d3.json(queryUrl, function (data){
   
@@ -52,23 +48,42 @@ d3.json(queryUrl, function (data){
 L.geoJSON(data, {
   pointTolayer: function(feature, latlong){
     return L.circleMarker(latlong);
-  }, style: markerStyle,
-  
-  onEachFeature(feature, layer) {
-    console.log(feature.properties.mag)
+  }, 
+  style: markerStyle,
+    onEachFeature: function(feature, layer) {
     layer.bindPopup("Magnitude: " + feature.properties.mag +
-      "<br>Location: " + feature.properties.place);
+    "<br>Location: " + feature.properties.place);
 }}).addTo(map);
- // Create a GeoJSON layer containing the features array on the earthquakeData object
-  // Run the onEachFeature function once for each piece of data in the array
 
-build a legend
-  var legend = L.control({ position: "bottomright" });
-    legend.onAdd = function() {
-      var div = L.DomUtil.create("div", "info legend");
-      var limits = geojson.options.limits;
-      var colors = geojson.options.colors;
-      var labels = [];
+var legend = L.control({
+  position: "bottomright"
+});
 
+legend.onAdd = function() {
+  var div = L
+    .DomUtil
+    .create("div", "info legend");
+
+  var grades = [0, 1, 2, 3, 4, 5];
+  var colors = [
+    "#98ee00",
+    "#d4ee00",
+    "#eecc00",
+    "#ee9c00",
+    "#ea822c",
+    "#ea2c2c"
+  ];
+
+
+  for (var i = 0; i < grades.length; i++) {
+    div.innerHTML += "<i style='background: " + colors[i] + "'></i> " +
+      grades[i] + (grades[i + 1] ? "&ndash;" + grades[i + 1] + "<br>" : "+");
+  }
+  return div;
+};
+
+
+legend.addTo(map);
+  
 
 });
