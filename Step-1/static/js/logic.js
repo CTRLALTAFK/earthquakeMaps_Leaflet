@@ -18,15 +18,15 @@ graymap.addTo(map)
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
 
 d3.json(queryUrl, function (data){
-  
+console.log(data)
   function markerRadius(magnitude){
-    if (magnitude == 0){return 1};
+    if (magnitude === 0){return 1};
     return magnitude * 2;
 
 }
   function markerColor(magnitude){
     switch (true) {
-      case magnitude > 5:
+      case magnitude > 5.0:
         return "#EA2C2C";
       case magnitude > 4:
         return "#EA822C";
@@ -40,50 +40,48 @@ d3.json(queryUrl, function (data){
         return "#98EE00";
 }}
   function markerStyle(feature){
-    return {opacity: 55, 
-      fillOpacity:55,
+    return {
+      opacity: 1, 
+      color: "#000000",
+      stroke: true,
+      weight: 0.5,
+      fillOpacity:1,
       fillColor: markerColor(feature.properties.mag),
       radius: markerRadius(feature.properties.mag), }
 }
-L.geoJSON(data, {
-  pointTolayer: function(feature, latlong){
-    return L.circleMarker(latlong);
-  }, 
-  style: markerStyle,
+
+  L.geoJson(data, {
+    pointToLayer: function(feature,latlong){
+      
+      return L.circleMarker(latlong);
+     }, 
+    style: markerStyle,
     onEachFeature: function(feature, layer) {
     layer.bindPopup("Magnitude: " + feature.properties.mag +
     "<br>Location: " + feature.properties.place);
 }}).addTo(map);
+
+// Create the legend
 
 var legend = L.control({
   position: "bottomright"
 });
 
 legend.onAdd = function() {
-  var div = L
-    .DomUtil
-    .create("div", "info legend");
+  var legend_loc = L.DomUtil.create("div", "  legend"),
+  levels = [0, 1, 2, 3, 4, 5]
 
-  var grades = [0, 1, 2, 3, 4, 5];
-  var colors = [
-    "#98ee00",
-    "#d4ee00",
-    "#eecc00",
-    "#ee9c00",
-    "#ea822c",
-    "#ea2c2c"
-  ];
-
-
-  for (var i = 0; i < grades.length; i++) {
-    div.innerHTML += "<i style='background: " + colors[i] + "'></i> " +
-      grades[i] + (grades[i + 1] ? "&ndash;" + grades[i + 1] + "<br>" : "+");
+  // Loop through magnitude intervals and generate a label with a colored square for each interval
+  for (var i = 0; i < levels.length; i++) {
+    legend_loc.innerHTML += '<i style="background:' + markerColor(levels[i]) + '"></i> ' + [i] + (levels[i + 1] ? '&ndash;' + 
+      levels[i + 1] + '<br>' : '+');
   }
-  return div;
+  return legend_loc;
 };
 
-
+// Add legend to the map
 legend.addTo(map);
+
   
 
 });
